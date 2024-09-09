@@ -1,5 +1,6 @@
 import datetime
 import uuid
+from dataclasses import dataclass
 
 from src.lib.dto import ArbitraryModel
 
@@ -16,3 +17,9 @@ class CreateSiteDTO(ArbitraryModel):
     url: str
     expire_date: datetime.date
 
+
+@dataclass
+class SitesListRequest:
+    limit: int = 100
+    offset: int = 0
+    ordering: str = "created_at"
