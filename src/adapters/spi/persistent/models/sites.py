@@ -10,7 +10,7 @@ class Sites(Base):
 
     __tablename__ = "sites"
 
-    iid: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     url: Mapped[str] = mapped_column(String(120))
     expire_date: Mapped[expire_at]
     created_at: Mapped[created_at]

@@ -43,32 +43,25 @@ class PostgresConfig(EnvBaseSettings):
             )
         return self
 
-    @classmethod
-    def assemble_slave_hosts(cls, v: str) -> list[str]:
-        if v == "":
-            return []
-        return [item.strip() for item in v.split(",")]
-
-    @model_validator(mode="after")
-    def assemble_slave_dsns(self) -> Self:
-        if self.slave_dsns is not None:
-            return self
-        dsns: list[PostgresDsn] = []
-        for host in self.slave_hosts:
-            dsns.append(
-                PostgresDsn.build(
-                    scheme=self.scheme,
-                    username=self.user,
-                    password=self.password,
-                    host=host,
-                    port=self.port,
-                    path=f"{self.db}",
-                )
-            )
-        self.slave_dsns = dsns
-        return self
 
     model_config = SettingsConfigDict(env_prefix="postgres_")
+
+
+class LitestarAppSettings(EnvBaseSettings):
+    """Настройки приложения Litestar."""
+
+    debug: bool = True
+    root_path: str = ""
+    model_config = SettingsConfigDict(env_prefix="app_")
+
+
+class LitestarOpenapiSettings(EnvBaseSettings):
+    """Настройки OpenAPI."""
+
+    title: str = "Service API"
+    description: str = "Описание сервиса"
+    docs_url: str = "/docs"
+    model_config = SettingsConfigDict(env_prefix="openapi_")
 
 
 class BotSettings(EnvBaseSettings):
@@ -80,8 +73,12 @@ class BotSettings(EnvBaseSettings):
 
 class Settings(EnvBaseSettings):
 
+    app: LitestarAppSettings = LitestarAppSettings()
+    openapi: LitestarOpenapiSettings = LitestarOpenapiSettings()
     bot: BotSettings = BotSettings()
     database: PostgresConfig = PostgresConfig()
 
 
 config = Settings()
+
+print(config.database.dsn)

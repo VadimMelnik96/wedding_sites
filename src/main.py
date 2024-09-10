@@ -1,60 +1,74 @@
 import asyncio
-import time
-import datetime
-
-from aiogram import Bot, Dispatcher, types, F
-from aiogram.filters.command import Command
-from aiogram.utils.formatting import as_list
-
-from settings.config import config
-
-bot = Bot(token=config.bot.token.get_secret_value())
-
-dp = Dispatcher()
-
-todays = datetime.date.fromtimestamp(time.time())
-
-fake_db = {
-    "https://nikita.com": "2025-06-12",
-    "https://prosrocheno.com": "2023-06-12",
-}
+import uvicorn
+import uvloop
+from aiogram import Bot, Dispatcher
+from litestar import Litestar
+from litestar.config.compression import CompressionConfig
+from litestar.openapi import OpenAPIConfig
+from litestar.openapi.plugins import ScalarRenderPlugin
+from dishka import make_async_container
+from dishka.integrations.litestar import setup_dishka as setup_dishka_for_litestar
+from litestar.di import Provide
+from dishka.integrations.aiogram import setup_dishka as setup_dishka_for_tg
+from settings.config import config, PostgresConfig
+from src.adapters.api.http.v1 import v1_router
+from src.adapters.bot.routers.check_router import check_router
+from src.infrastructure.ioc import ApplicationProvider, PostgresProvider
+from src.lib.middlewares import DatabaseMiddleware
 
 
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    content = as_list(
-        f"Привет, {message.from_user.full_name}",
-        "Этот бот поможет тебе узнать, сколько еще осталось жить твоему сайту. "
-        "Пожалуйста, введи ссылку на твой сайт"
+def get_litestar_app() -> Litestar:
+    """Создание экземпляра Litestar приложения."""
+    return Litestar(
+        path=config.app.root_path,
+        route_handlers=[v1_router],
+        # plugins=[StructlogPlugin()],
+        debug=config.app.debug,
+        compression_config=CompressionConfig(backend="gzip", gzip_compress_level=9),
+        openapi_config=OpenAPIConfig(
+            title=config.openapi.title,
+            description=config.openapi.description,
+            version="0.0.0",
+            render_plugins=[ScalarRenderPlugin()],
+            path="/docs",
+        ))
+
+
+def get_app() -> Litestar:
+    """Генерация Litestar приложения."""
+    litestar_app = get_litestar_app()
+    setup_dishka_for_litestar(
+        make_async_container(
+            ApplicationProvider(),
+            PostgresProvider(),
+            context={PostgresConfig: config.database}
+        ), litestar_app
     )
-    await message.answer(**content.as_kwargs())
+    # litestar_app.plugins = [StructlogPlugin()]
+    litestar_app.middleware = [DatabaseMiddleware]
+    return litestar_app
+
+async def get_bot():
+    # real main
+    bot = Bot(token=config.bot.token)
+    dp = Dispatcher()
+    dp.include_router(check_router)
+
+    container = make_async_container(
+        ApplicationProvider(),
+        AiogramProvider(),
+    )
+    setup_dishka_for_tg(container=container, router=dp)
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await container.close()
+        await bot.session.close()
 
 
-def check_date(url: str) -> str:
-    expire_date = fake_db.get(url)
-    if expire_date:
-        date_object = datetime.datetime.strptime(expire_date, "%Y-%m-%d").date()
-        if date_object > datetime.date.today():
-            delta = date_object - datetime.date.today()
-            return f"Дата окончания поддержки вашего сайта: {expire_date}. Осталось {delta.days} дней."
-        return f"Ваш сайт больше не поддерживается"
-    return f"Такого сайта нет в нашей базе. Пожалуйста, проверьте правильность введенных данных"
 
+app = get_app()
 
-@dp.message(F.text)
-async def check_ttl(message: types.Message):
-    if message.text:
-
-        url = message.text
-        answer = check_date(url)
-        await message.answer(answer)
-        return
-    await message.answer("Ошибка: не переданы данные")
-    return
-
-
-async def main():
-    await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

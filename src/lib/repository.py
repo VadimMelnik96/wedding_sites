@@ -59,11 +59,11 @@ class SQLAlchemyRepository(Repository):
     response_dto: BaseModel = None
 
     def __init__(
-        self, session: AsyncSession, auto_commit: bool = None, auto_refresh: bool = None
+        self, session: AsyncSession,
     ):
         self.session = session
-        self.auto_commit = auto_commit
-        self.auto_refresh = auto_refresh
+        self.auto_commit = None
+        self.auto_refresh = None
 
     async def create(
             self,
