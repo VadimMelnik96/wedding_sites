@@ -1,5 +1,6 @@
 from typing import AsyncIterator
 
+from aiogram.types import TelegramObject
 from dishka import Provider, from_context, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 from settings.config import PostgresConfig, BotSettings
@@ -18,6 +19,9 @@ class ApplicationProvider(Provider):
     site_repo = provide(SitesRepo, scope=Scope.REQUEST, provides=ISitesRepo)
     site_service = provide(SitesService, scope=Scope.REQUEST, provides=ISitesService)
 
+
+class AiogramProvider(Provider):
+    event = from_context(TelegramObject, scope=Scope.REQUEST)
 
 
 class PostgresProvider(Provider):

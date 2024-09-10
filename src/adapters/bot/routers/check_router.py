@@ -3,6 +3,12 @@ import datetime
 from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.utils.formatting import as_list
+from dishka import FromDishka
+from dishka.integrations.aiogram import inject
+
+from src.adapters.api.http.v1.dto.sites import SitesDTO
+from src.services.ports.sites import ISitesService
+from src.services.sites import SitesFilter
 
 check_router = Router()
 
@@ -25,11 +31,13 @@ def check_date(expire_date: str) -> str:
 
 
 @check_router.message(F.text)
-async def check_ttl(message: types.Message):
-    if message.text:
+async def check_ttl(message: types.Message, service: FromDishka[ISitesService]):
 
+    if message.text:
         url = message.text
-        answer = check_date(url)
+        site_data: SitesDTO = await service.get_site_data(SitesFilter(url=url))
+        print(site_data)
+        answer = check_date(str(site_data.expire_date))
         await message.answer(answer)
         return
     await message.answer("Ошибка: не переданы данные")

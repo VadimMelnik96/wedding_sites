@@ -13,7 +13,7 @@ from dishka.integrations.aiogram import setup_dishka as setup_dishka_for_tg
 from settings.config import config, PostgresConfig
 from src.adapters.api.http.v1 import v1_router
 from src.adapters.bot.routers.check_router import check_router
-from src.infrastructure.ioc import ApplicationProvider, PostgresProvider
+from src.infrastructure.ioc import ApplicationProvider, PostgresProvider, AiogramProvider
 from src.lib.middlewares import DatabaseMiddleware
 
 
@@ -50,15 +50,19 @@ def get_app() -> Litestar:
 
 async def get_bot():
     # real main
-    bot = Bot(token=config.bot.token)
+    print(config.bot.token)
+    bot = Bot(token=config.bot.token.get_secret_value())
+
     dp = Dispatcher()
     dp.include_router(check_router)
 
     container = make_async_container(
         ApplicationProvider(),
         AiogramProvider(),
+        PostgresProvider(),
+        context={PostgresConfig: config.database}
     )
-    setup_dishka_for_tg(container=container, router=dp)
+    setup_dishka_for_tg(container=container, router=dp, auto_inject=True)
     try:
         await dp.start_polling(bot)
     finally:
@@ -71,4 +75,5 @@ app = get_app()
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    # uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    asyncio.run(get_bot())

@@ -8,9 +8,9 @@ from src.services.ports.sites import ISitesService
 
 
 class SitesFilter(ArbitraryModel):
-    id: uuid.UUID | None = None
+
     url: str
-    expire_date: datetime.date | None = None
+
 
 
 class MassFilter(ArbitraryModel):
@@ -25,13 +25,13 @@ class SitesService(ISitesService):
         self.sites = sites
 
     async def get_site_data(self, filters: SitesFilter):
-        return self.sites.get_one(filters)
+        return await self.sites.get_one(filters)
 
     async def create_site_data(self, data: CreateSiteDTO):
-        return self.sites.create(data)
+        return await self.sites.create(data)
 
     async def bulk_create_data(self, bulk_data: list[CreateSiteDTO]):
-        return self.sites.bulk_create(bulk_data)
+        return await self.sites.bulk_create(bulk_data)
 
     async def get_sites_list(self, filters: MassFilter):
-        return self.sites.get_list(limit=filters.limit, offset=filters.offset, order=filters.ordering)
+        return await self.sites.get_list(limit=filters.limit, offset=filters.offset, order=filters.ordering)
