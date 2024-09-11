@@ -36,7 +36,6 @@ async def check_ttl(message: types.Message, service: FromDishka[ISitesService]):
     if message.text:
         url = message.text
         site_data: SitesDTO = await service.get_site_data(SitesFilter(url=url))
-        print(site_data)
         answer = check_date(str(site_data.expire_date))
         await message.answer(answer)
         return

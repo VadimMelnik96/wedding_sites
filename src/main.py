@@ -50,7 +50,6 @@ def get_app() -> Litestar:
 
 async def get_bot():
     # real main
-    print(config.bot.token)
     bot = Bot(token=config.bot.token.get_secret_value())
 
     dp = Dispatcher()
