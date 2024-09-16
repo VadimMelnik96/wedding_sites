@@ -72,7 +72,7 @@ async def get_payment(callback: types.CallbackQuery, service: FromDishka[IPaymen
         },
         "capture": True,
         "description": f"Продление обслуживания сайта {site} на 1 год",
-        "metadata" : {"site_id": site_id},
+        "metadata": {"site_id": site_id},
         })
     confirmation_url = payment.confirmation.confirmation_url
 
