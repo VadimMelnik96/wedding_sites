@@ -1,6 +1,4 @@
 import asyncio
-import uvicorn
-import uvloop
 from aiogram import Bot, Dispatcher
 from litestar import Litestar
 from litestar.config.compression import CompressionConfig
@@ -8,7 +6,6 @@ from litestar.openapi import OpenAPIConfig
 from litestar.openapi.plugins import ScalarRenderPlugin
 from dishka import make_async_container
 from dishka.integrations.litestar import setup_dishka as setup_dishka_for_litestar
-from litestar.di import Provide
 from dishka.integrations.aiogram import setup_dishka as setup_dishka_for_tg
 from settings.config import config, PostgresConfig
 from src.adapters.api.http.v1 import v1_router
@@ -50,6 +47,7 @@ def get_app() -> Litestar:
 
 async def get_bot():
     # real main
+    """Генерация бота"""
     bot = Bot(token=config.bot.token.get_secret_value())
 
     dp = Dispatcher()
@@ -67,7 +65,6 @@ async def get_bot():
     finally:
         await container.close()
         await bot.session.close()
-
 
 
 app = get_app()

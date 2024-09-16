@@ -11,6 +11,13 @@ class EnvBaseSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
+class YooKassaSettings(EnvBaseSettings):
+    shop_id: str
+    api_key: str
+    model_config = SettingsConfigDict(env_prefix="kassa_")
+
+
+
 class PostgresConfig(EnvBaseSettings):
     scheme: str = "postgresql+asyncpg"
     host: str = "localhost"
@@ -77,8 +84,7 @@ class Settings(EnvBaseSettings):
     openapi: LitestarOpenapiSettings = LitestarOpenapiSettings()
     bot: BotSettings = BotSettings()
     database: PostgresConfig = PostgresConfig()
+    yookassa: YooKassaSettings = YooKassaSettings()
 
 
 config = Settings()
-
-print(config.database.dsn)
