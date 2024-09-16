@@ -37,7 +37,7 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    async def update(self, update_dto):
+    async def update(self, update_dto, filters):
         pass
 
     @abstractmethod
@@ -112,14 +112,14 @@ class SQLAlchemyRepository(Repository):
     async def update(
         self,
         update_dto: BaseModel,
+        filters: BaseModel,
         response_dto: BaseModel | None = None,
         auto_commit: bool = True,
-        **filters,
     ) -> BaseModel:
         stmt = (
             update(self.model)
             .values(**update_dto.model_dump())
-            .filter_by(**filters)
+            .filter_by(**filters.model_dump())
             .returning(self.model)
         )
         res = (await self._execute(stmt)).scalar_one_or_none()

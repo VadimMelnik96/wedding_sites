@@ -14,3 +14,12 @@ class PaymentDTO(ArbitraryModel):
     currency: str
     confirmation_url: str
     description: str
+
+
+class PaymentFilter(ArbitraryModel):
+    id: uuid.UUID
+
+
+class PaymentUpdateDTO(ArbitraryModel):
+    status: str
+    paid: bool

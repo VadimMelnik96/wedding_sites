@@ -1,8 +1,12 @@
+import json
+from http import HTTPStatus
+
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, get, post
-
+from litestar import Controller, get, post, Request, Response
+from litestar.status_codes import HTTP_200_OK
 from src.adapters.api.http.v1.dto.sites import SitesListRequest, SitesDTO, CreateSiteDTO
+from src.services.ports.payments import IPaymentsService
 from src.services.ports.sites import ISitesService
 from src.services.sites import MassFilter, SitesFilter
 
@@ -30,3 +34,10 @@ class WeddingSitesController(Controller):
     @inject
     async def get_site(self, service: FromDishka[ISitesService], data: SitesFilter) -> SitesDTO:
         return await service.get_site_data(data)
+
+    @post("/webhooks", summary="Уведомления о платежах")
+    @inject
+    async def refresh_data_from_yookassa(self, service: FromDishka[IPaymentsService], request: Request) -> HTTP_200_OK:
+        event = await request.body()
+        await service.handle_update(event)
+        return HTTP_200_OK

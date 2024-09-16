@@ -18,6 +18,10 @@ class CreateSiteDTO(ArbitraryModel):
     expire_date: datetime.date
 
 
+class UpdateSiteDTO(ArbitraryModel):
+    expire_date: datetime.date
+
+
 @dataclass
 class SitesListRequest:
     limit: int = 100

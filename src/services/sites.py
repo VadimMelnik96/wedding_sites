@@ -9,8 +9,12 @@ from src.services.ports.sites import ISitesService
 
 class SitesFilter(ArbitraryModel):
 
-    url: str
+    url: str | None = None
+    id: uuid.UUID | None = None
 
+
+class UpdateSitesFilter(ArbitraryModel):
+    id: uuid.UUID | None = None
 
 
 class MassFilter(ArbitraryModel):

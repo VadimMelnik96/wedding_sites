@@ -1,4 +1,6 @@
 import asyncio
+
+import uvicorn
 from aiogram import Bot, Dispatcher
 from litestar import Litestar
 from litestar.config.compression import CompressionConfig
@@ -71,5 +73,5 @@ app = get_app()
 
 
 if __name__ == "__main__":
-    # uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
-    asyncio.run(get_bot())
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    # asyncio.run(get_bot())
