@@ -1,15 +1,13 @@
 import datetime
-import json
 
 from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.utils.formatting import as_list
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from dishka import FromDishka
-from dishka.integrations.aiogram import inject
 from yookassa import Configuration, Payment
 
-from settings.config import config
+from src.settings.config import config
 from src.adapters.api.http.v1.dto.payments import PaymentDTO
 from src.adapters.api.http.v1.dto.sites import SitesDTO
 from src.services.ports.payments import IPaymentsService

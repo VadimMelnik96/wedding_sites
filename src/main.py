@@ -9,11 +9,12 @@ from litestar.openapi.plugins import ScalarRenderPlugin
 from dishka import make_async_container
 from dishka.integrations.litestar import setup_dishka as setup_dishka_for_litestar
 from dishka.integrations.aiogram import setup_dishka as setup_dishka_for_tg
-from settings.config import config, PostgresConfig
+
 from src.adapters.api.http.v1 import v1_router
 from src.adapters.bot.routers.check_router import check_router
 from src.infrastructure.ioc import ApplicationProvider, PostgresProvider, AiogramProvider
 from src.lib.middlewares import DatabaseMiddleware
+from src.settings.config import PostgresConfig, config
 
 
 def get_litestar_app() -> Litestar:
@@ -71,7 +72,14 @@ async def get_bot():
 
 app = get_app()
 
+async def main():
+    """Главная корутина для одновременного запуска бота и веб-приложения"""
+    bot_task = asyncio.create_task(get_bot())
+    uvicorn_config = uvicorn.Config(app, host="0.0.0.0", port=8000)
+    uvicorn_server = uvicorn.Server(uvicorn_config)
+    uvicorn_task = asyncio.create_task(uvicorn_server.serve())
+    await asyncio.gather(bot_task, uvicorn_task)
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
-    # asyncio.run(get_bot())
+
+if __name__ == '__main__':
+    asyncio.run(main())

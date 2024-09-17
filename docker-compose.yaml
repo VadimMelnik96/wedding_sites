@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres_user
+      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_DB=postgres_name
+      - PGDATA="/var/lib/postgresql/14/main"
+    volumes:
+      - .:/var/lib/postgresql/14/main
+    ports:
+      - "5432:5432"

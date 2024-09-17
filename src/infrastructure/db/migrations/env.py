@@ -1,5 +1,3 @@
-import os
-import sys
 import asyncio
 from logging.config import fileConfig
 
@@ -11,7 +9,7 @@ from alembic import context
 import os
 import sys
 
-from settings.config import config as config_settings
+from src.settings.config import config as config_settings
 from src.infrastructure.db.migrations.base import Base
 
 sys.path.append(os.path.join(sys.path[0], 'src'))

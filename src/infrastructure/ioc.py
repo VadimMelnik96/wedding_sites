@@ -3,7 +3,7 @@ from typing import AsyncIterator
 from aiogram.types import TelegramObject
 from dishka import Provider, from_context, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
-from settings.config import PostgresConfig, BotSettings
+from src.settings.config import PostgresConfig, BotSettings
 from src.adapters.spi.persistent.repositories.payments_repo import PaymentsRepo
 from src.adapters.spi.persistent.repositories.ports.payments import IPaymentsRepo
 from src.adapters.spi.persistent.repositories.ports.sites import ISitesRepo
