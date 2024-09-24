@@ -41,3 +41,7 @@ class WeddingSitesController(Controller):
         event = await request.body()
         await service.handle_update(event)
         return HTTP_200_OK
+
+
+    # TODO роутер платежей, пересмотреть методы в этом роутере по REST
+    # TODO логгинг

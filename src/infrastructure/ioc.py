@@ -27,6 +27,7 @@ class ApplicationProvider(Provider):
 
 
 class AiogramProvider(Provider):
+    """Провайдер для Aiogramm"""
     event = from_context(TelegramObject, scope=Scope.REQUEST)
 
 

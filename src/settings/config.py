@@ -20,7 +20,7 @@ class YooKassaSettings(EnvBaseSettings):
 
 class PostgresConfig(EnvBaseSettings):
     scheme: str = "postgresql+asyncpg"
-    host: str = "localhost"
+    host: str = "db"
     port: int = 5432
     user: str = "postgres"
     password: str = "postgres"
@@ -40,14 +40,14 @@ class PostgresConfig(EnvBaseSettings):
     @model_validator(mode="after")
     def assemble_db_connection(self) -> Self:
         if self.dsn is None:
-            self.dsn = PostgresDsn.build(
+            self.dsn = str(PostgresDsn.build(
                 scheme=self.scheme,
                 username=self.user,
                 password=self.password,
                 host=self.host,
                 port=self.port,
                 path=f"{self.db}",
-            )
+            )) + "?async_fallback=True"
         return self
 
 

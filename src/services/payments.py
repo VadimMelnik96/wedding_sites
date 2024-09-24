@@ -19,11 +19,12 @@ class PaymentsService(IPaymentsService, ABC):
         self.payments = payments
 
     async def write_down_payment(self, data: PaymentDTO):
+        """Запись платежа в базе"""
         await self.payments.create(data)
 
     async def handle_update(self, event: bytes):
+        """Сценарий обновления данных после успешного платежа"""
         event_json = json.loads(event)
-        print(event_json)
         notification_object = WebhookNotificationFactory().create(event_json)
         response_object = notification_object.object
         payment = await self.payments.get_one(PaymentFilter(id=response_object.id))
@@ -32,9 +33,7 @@ class PaymentsService(IPaymentsService, ABC):
             PaymentFilter(id=payment.id)
         )
         if notification_object.event == WebhookNotificationEventType.PAYMENT_SUCCEEDED:
-            print("here")
             site = await self.sites.get_one(UpdateSitesFilter(id=payment.site_id))
-            print(site)
             update_data = UpdateSiteDTO(expire_date=site.expire_date + timedelta(days=365))
             await self.sites.update(update_data, UpdateSitesFilter(id=payment.site_id))
 

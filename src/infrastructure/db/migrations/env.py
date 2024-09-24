@@ -19,7 +19,7 @@ sys.path.append(os.path.join(sys.path[0], 'src'))
 config = context.config
 section = config.config_ini_section
 
-config.set_main_option("sqlalchemy.url", str(config_settings.database.dsn) + "?async_fallback=True")
+config.set_main_option("sqlalchemy.url", str(config_settings.database.dsn)) #+ "?async_fallback=True")
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
