@@ -1,5 +1,6 @@
 import uuid
 import datetime
+from dataclasses import dataclass
 
 from src.lib.dto import ArbitraryModel
 
@@ -16,10 +17,24 @@ class PaymentDTO(ArbitraryModel):
     description: str
 
 
-class PaymentFilter(ArbitraryModel):
-    id: uuid.UUID
-
-
 class PaymentUpdateDTO(ArbitraryModel):
     status: str
     paid: bool
+
+
+@dataclass
+class PaymentsListRequest:
+    id: uuid.UUID | None
+    site_id: uuid.UUID | None
+    status: str | None
+    paid: bool | None
+    limit: int | None = 0
+    offset: int | None = 100
+    ordering: str | None = None
+
+class PaymentFilter(ArbitraryModel):
+    id: uuid.UUID | None
+    site_id: uuid.UUID | None
+    status: str | None
+    paid: bool | None
+

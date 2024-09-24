@@ -1,15 +1,18 @@
 import json
+import uuid
 from abc import ABC
 from datetime import timedelta
 
 from yookassa.domain.notification import WebhookNotificationFactory, WebhookNotificationEventType
 
-from src.adapters.api.http.v1.dto.payments import PaymentDTO, PaymentFilter, PaymentUpdateDTO
+from src.adapters.api.http.v1.dto.payments import PaymentDTO, PaymentUpdateDTO, PaymentFilter
 from src.adapters.api.http.v1.dto.sites import UpdateSiteDTO
 from src.adapters.spi.persistent.repositories.ports.payments import IPaymentsRepo
 from src.adapters.spi.persistent.repositories.ports.sites import ISitesRepo
+
 from src.services.ports.payments import IPaymentsService
-from src.services.sites import SitesFilter, UpdateSitesFilter
+from src.services.sites import UpdateSitesFilter, MassFilter
+
 
 
 class PaymentsService(IPaymentsService, ABC):
@@ -22,7 +25,7 @@ class PaymentsService(IPaymentsService, ABC):
         """Запись платежа в базе"""
         await self.payments.create(data)
 
-    async def handle_update(self, event: bytes):
+    async def handle_update(self, event: bytes) -> None:
         """Сценарий обновления данных после успешного платежа"""
         event_json = json.loads(event)
         notification_object = WebhookNotificationFactory().create(event_json)
@@ -36,6 +39,9 @@ class PaymentsService(IPaymentsService, ABC):
             site = await self.sites.get_one(UpdateSitesFilter(id=payment.site_id))
             update_data = UpdateSiteDTO(expire_date=site.expire_date + timedelta(days=365))
             await self.sites.update(update_data, UpdateSitesFilter(id=payment.site_id))
+
+    async def payment_list(self, filters: PaymentFilter, mass_filter: MassFilter) -> list[PaymentDTO]:
+        return await self.payments.get_payments_list(filters, mass_filter)
 
 # тело тестового уведомления о успешной оплате продления
 

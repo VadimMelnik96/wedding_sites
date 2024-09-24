@@ -35,12 +35,7 @@ class WeddingSitesController(Controller):
     async def get_site(self, service: FromDishka[ISitesService], data: SitesFilter) -> SitesDTO:
         return await service.get_site_data(data)
 
-    @post("/webhooks", summary="Уведомления о платежах")
-    @inject
-    async def refresh_data_from_yookassa(self, service: FromDishka[IPaymentsService], request: Request) -> HTTP_200_OK:
-        event = await request.body()
-        await service.handle_update(event)
-        return HTTP_200_OK
+
 
 
     # TODO роутер платежей, пересмотреть методы в этом роутере по REST
