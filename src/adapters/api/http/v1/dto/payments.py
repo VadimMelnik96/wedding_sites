@@ -1,5 +1,4 @@
 import uuid
-import datetime
 from dataclasses import dataclass
 
 from src.lib.dto import ArbitraryModel
@@ -32,9 +31,9 @@ class PaymentsListRequest:
     offset: int | None = 100
     ordering: str | None = None
 
+
 class PaymentFilter(ArbitraryModel):
     id: uuid.UUID | None
     site_id: uuid.UUID | None
     status: str | None
     paid: bool | None
-

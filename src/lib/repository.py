@@ -9,9 +9,7 @@ from sqlalchemy import (
     delete,
     ScalarResult,
     Select,
-    StatementLambdaElement,
     Result,
-    Insert,
     ValuesBase,
     Delete,
 )
@@ -29,7 +27,7 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    async def get_list(self, limit: int, offset: int, order: str):
+    async def get_list(self, filters):
         pass
 
     @abstractmethod
@@ -93,7 +91,6 @@ class SQLAlchemyRepository(Repository):
 
     async def get_one(self, filters: BaseModel, response_dto: BaseModel | None = None) -> BaseModel:
         stmt = select(self.model).filter_by(**filters.model_dump(exclude_unset=True))
-
         result = await self._execute(stmt)
         instance = result.scalar_one_or_none()
         self.check_not_found(instance)
@@ -102,11 +99,9 @@ class SQLAlchemyRepository(Repository):
     async def get_list(
         self,
         response_dto: Base | None = None,
-        limit: int = 100,
-        offset: int = 0,
-        order: str = "id",
+        filters: BaseModel = None,
     ) -> list[BaseModel]:
-        stmt = select(self.model).order_by(order).limit(limit).offset(offset)
+        stmt = select(self.model).order_by(filters.order).limit(filters.limit).offset(filters.offset)
         res = await self._execute(stmt)
         return self.to_dto(res.scalars())
 

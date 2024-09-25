@@ -11,7 +11,6 @@ except ImportError as exc:
 
 class DatabaseMiddleware(MiddlewareProtocol):
     """Промежуточный слой для открытия scoped session на запросах."""
-
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)
         self.app = app

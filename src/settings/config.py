@@ -17,7 +17,6 @@ class YooKassaSettings(EnvBaseSettings):
     model_config = SettingsConfigDict(env_prefix="kassa_")
 
 
-
 class PostgresConfig(EnvBaseSettings):
     scheme: str = "postgresql+asyncpg"
     host: str = "db"
@@ -49,7 +48,6 @@ class PostgresConfig(EnvBaseSettings):
                 path=f"{self.db}",
             )) + "?async_fallback=True"
         return self
-
 
     model_config = SettingsConfigDict(env_prefix="postgres_")
 

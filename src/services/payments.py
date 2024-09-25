@@ -1,5 +1,4 @@
 import json
-import uuid
 from abc import ABC
 from datetime import timedelta
 
@@ -12,7 +11,6 @@ from src.adapters.spi.persistent.repositories.ports.sites import ISitesRepo
 
 from src.services.ports.payments import IPaymentsService
 from src.services.sites import UpdateSitesFilter, MassFilter
-
 
 
 class PaymentsService(IPaymentsService, ABC):
@@ -41,6 +39,7 @@ class PaymentsService(IPaymentsService, ABC):
             await self.sites.update(update_data, UpdateSitesFilter(id=payment.site_id))
 
     async def payment_list(self, filters: PaymentFilter, mass_filter: MassFilter) -> list[PaymentDTO]:
+        """Сценарий получения списка платежей"""
         return await self.payments.get_payments_list(filters, mass_filter)
 
 # тело тестового уведомления о успешной оплате продления

@@ -1,5 +1,6 @@
 import datetime
 
+import structlog
 from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.utils.formatting import as_list
@@ -19,8 +20,12 @@ check_router = Router()
 Configuration.account_id = config.yookassa.shop_id
 Configuration.secret_key = config.yookassa.api_key
 
+logger = structlog.get_logger()
+
+
 @check_router.message(Command("start"))
 async def cmd_start(message: types.Message):
+    logger.info(f"{message.from_user.id} {message.from_user.full_name} начал общение с ботом")
     content = as_list(
         f"Привет, {message.from_user.full_name}",
         "Этот бот поможет тебе узнать, сколько еще осталось жить твоему сайту. "
@@ -30,17 +35,17 @@ async def cmd_start(message: types.Message):
 
 
 def check_date(expire_date: str) -> str:
-        date_object = datetime.datetime.strptime(expire_date, "%Y-%m-%d").date()
-        if date_object > datetime.date.today():
-            delta = date_object - datetime.date.today()
-            return f"Дата окончания поддержки вашего сайта: {expire_date}. Осталось {delta.days} дней. Вы можете продлить поддержку на год за 390 рублей"
+    date_object = datetime.datetime.strptime(expire_date, "%Y-%m-%d").date()
+    if date_object > datetime.date.today():
+        delta = date_object - datetime.date.today()
+        return f"Дата окончания поддержки вашего сайта: {expire_date}. Осталось {delta.days} дней. Вы можете продлить поддержку на год за 390 рублей"
 
 
 @check_router.message(F.text)
 async def check_ttl(message: types.Message, service: FromDishka[ISitesService]):
-
     if message.text:
         url = message.text
+        logger.info(f"{message.from_user.id} {message.from_user.full_name}: Запрос по сайту {url}")
         site_data: SitesDTO = await service.get_site_data(SitesFilter(url=url))
         answer = check_date(str(site_data.expire_date))
         builder = InlineKeyboardBuilder()
@@ -52,6 +57,7 @@ async def check_ttl(message: types.Message, service: FromDishka[ISitesService]):
         return
     await message.answer("Ошибка: не переданы данные")
     return
+
 
 @check_router.callback_query(F.data.startswith("year_"))
 async def get_payment(callback: types.CallbackQuery, service: FromDishka[IPaymentsService]):
@@ -71,9 +77,9 @@ async def get_payment(callback: types.CallbackQuery, service: FromDishka[IPaymen
         "capture": True,
         "description": f"Продление обслуживания сайта {site} на 1 год",
         "metadata": {"site_id": site_id},
-        })
+    })
     confirmation_url = payment.confirmation.confirmation_url
-
+    logger.info(f"Сформирован платеж по сайту {site}")
     payment_dto: PaymentDTO = PaymentDTO(
         id=payment.id,
         site_id=site_id,
@@ -88,4 +94,3 @@ async def get_payment(callback: types.CallbackQuery, service: FromDishka[IPaymen
     await service.write_down_payment(payment_dto)
     await callback.message.edit_text(f"Перейдите по ссылке для оплаты: {confirmation_url}")
     await callback.answer()
-

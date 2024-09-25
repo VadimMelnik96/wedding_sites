@@ -1,4 +1,3 @@
-import datetime
 import uuid
 
 from src.adapters.api.http.v1.dto.sites import CreateSiteDTO
@@ -38,4 +37,4 @@ class SitesService(ISitesService):
         return await self.sites.bulk_create(bulk_data)
 
     async def get_sites_list(self, filters: MassFilter):
-        return await self.sites.get_list(limit=filters.limit, offset=filters.offset, order=filters.ordering)
+        return await self.sites.get_list(filters)

@@ -1,12 +1,11 @@
-import json
-from http import HTTPStatus
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, get, post, Request, Response
-from litestar.status_codes import HTTP_200_OK
-from src.adapters.api.http.v1.dto.sites import SitesListRequest, SitesDTO, CreateSiteDTO
-from src.services.ports.payments import IPaymentsService
+from litestar import Controller, get, post
+from litestar.exceptions import HTTPException
+
+from src.adapters.api.http.v1.dto.sites import SitesListRequest, SitesDTO, CreateSiteDTO, SitesRequest
+from src.lib.exceptions import NotFoundError
 from src.services.ports.sites import ISitesService
 from src.services.sites import MassFilter, SitesFilter
 
@@ -30,13 +29,13 @@ class WeddingSitesController(Controller):
     async def bulk_create(self, service: FromDishka[ISitesService], data: list[CreateSiteDTO]) -> list[SitesDTO]:
         return await service.bulk_create_data(bulk_data=data)
 
-    @post("/get_site", summary="Найти сайт")
+    @get("/get_site", summary="Найти сайт")
     @inject
-    async def get_site(self, service: FromDishka[ISitesService], data: SitesFilter) -> SitesDTO:
-        return await service.get_site_data(data)
+    async def get_site(self, service: FromDishka[ISitesService], query: SitesRequest) -> SitesDTO:
+        filters = SitesFilter.model_validate(query.__dict__)
+        try:
+            return await service.get_site_data(filters)
+        except NotFoundError as exc:
+            raise HTTPException(status_code=404, detail="Сайт не найден") from exc
 
-
-
-
-    # TODO роутер платежей, пересмотреть методы в этом роутере по REST
     # TODO логгинг

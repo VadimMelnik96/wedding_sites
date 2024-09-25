@@ -26,4 +26,4 @@ class PaymentsRepo(SQLAlchemyRepository, IPaymentsRepo):
             if mass_filters.offset:
                 stmt = stmt.offset(mass_filters.offset)
         res = await self._execute(stmt)
-        return self.to_dto(res.scalars())
+        return self.to_dto(res.scalars().all())

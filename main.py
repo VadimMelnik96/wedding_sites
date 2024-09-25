@@ -48,6 +48,7 @@ def get_app() -> Litestar:
     litestar_app.middleware = [DatabaseMiddleware]
     return litestar_app
 
+
 async def get_bot():
     # real main
     """Генерация бота"""
@@ -71,6 +72,7 @@ async def get_bot():
 
 
 app = get_app()
+
 
 async def main():
     """Главная корутина для одновременного запуска бота и веб-приложения"""

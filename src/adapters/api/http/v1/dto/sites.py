@@ -27,3 +27,9 @@ class SitesListRequest:
     limit: int = 100
     offset: int = 0
     ordering: str = "created_at"
+
+
+@dataclass
+class SitesRequest:
+    url: str | None = None
+    id: uuid.UUID | None = None
