@@ -90,7 +90,7 @@ class SQLAlchemyRepository(Repository):
         return self.to_dto(res.scalar_one(), response_dto)
 
     async def get_one(self, filters: BaseModel, response_dto: BaseModel | None = None) -> BaseModel:
-        stmt = select(self.model).filter_by(**filters.model_dump(exclude_unset=True))
+        stmt = select(self.model).filter_by(**filters.model_dump(exclude_none=True))
         result = await self._execute(stmt)
         instance = result.scalar_one_or_none()
         self.check_not_found(instance)
@@ -101,7 +101,7 @@ class SQLAlchemyRepository(Repository):
         response_dto: Base | None = None,
         filters: BaseModel = None,
     ) -> list[BaseModel]:
-        stmt = select(self.model).order_by(filters.order).limit(filters.limit).offset(filters.offset)
+        stmt = select(self.model).filter_by(**filters.model_dump())
         res = await self._execute(stmt)
         return self.to_dto(res.scalars())
 

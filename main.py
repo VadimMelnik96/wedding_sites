@@ -77,7 +77,7 @@ app = get_app()
 async def main():
     """Главная корутина для одновременного запуска бота и веб-приложения"""
     bot_task = asyncio.create_task(get_bot())
-    uvicorn_config = uvicorn.Config(app, host="0.0.0.0", port=8000)
+    uvicorn_config = uvicorn.Config(app, host="0.0.0.0", port=8000, proxy_headers=True)
     uvicorn_server = uvicorn.Server(uvicorn_config)
     uvicorn_task = asyncio.create_task(uvicorn_server.serve())
     await asyncio.gather(bot_task, uvicorn_task)

@@ -1,4 +1,5 @@
 import json
+import uuid
 from abc import ABC
 from datetime import timedelta
 
@@ -22,6 +23,10 @@ class PaymentsService(IPaymentsService, ABC):
     async def write_down_payment(self, data: PaymentDTO):
         """Запись платежа в базе"""
         await self.payments.create(data)
+
+    async def get_payment(self, payment_id: uuid.UUID) -> PaymentDTO:
+        """Получение платежа"""
+        return await self.payments.get_one(PaymentFilter(id=payment_id))
 
     async def handle_update(self, event: bytes) -> None:
         """Сценарий обновления данных после успешного платежа"""

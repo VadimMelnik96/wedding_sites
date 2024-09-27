@@ -17,6 +17,8 @@ class WeddingSitesController(Controller):
     @get("/list", summary="Список сайтов",)
     @inject
     async def list_sites(self, service: FromDishka[ISitesService], query: SitesListRequest) -> list[SitesDTO]:
+        print(query)
+        print("here")
         return await service.get_sites_list(MassFilter.model_validate(query.__dict__))
 
     @post(summary="Добавить сайт")
@@ -33,6 +35,7 @@ class WeddingSitesController(Controller):
     @inject
     async def get_site(self, service: FromDishka[ISitesService], query: SitesRequest) -> SitesDTO:
         filters = SitesFilter.model_validate(query.__dict__)
+        print(filters)
         try:
             return await service.get_site_data(filters)
         except NotFoundError as exc:
