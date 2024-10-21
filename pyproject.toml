@@ -30,7 +30,7 @@ build-backend = "hatchling.build"
 [tool.rye]
 managed = true
 dev-dependencies = [
-    "ruff>=0.6.7",
+    "ruff>=0.6.8",
 ]
 
 [tool.hatch.metadata]

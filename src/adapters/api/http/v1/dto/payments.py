@@ -23,17 +23,16 @@ class PaymentUpdateDTO(ArbitraryModel):
 
 @dataclass
 class PaymentsListRequest:
-    id: uuid.UUID | None
-    site_id: uuid.UUID | None
-    status: str | None
-    paid: bool | None
-    limit: int | None = 0
-    offset: int | None = 100
+    site_id: uuid.UUID | None = None
+    status: str | None = None
+    paid: bool | None = None
+    limit: int | None = 100
+    offset: int | None = 0
     ordering: str | None = None
 
 
 class PaymentFilter(ArbitraryModel):
-    id: uuid.UUID | None
-    site_id: uuid.UUID | None
-    status: str | None
-    paid: bool | None
+    id: uuid.UUID | None = None
+    site_id: uuid.UUID | None = None
+    status: str | None = None
+    paid: bool | None = None

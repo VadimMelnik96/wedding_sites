@@ -27,7 +27,7 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    async def get_list(self, filters):
+    async def get_list(self, filters, order_filters):
         pass
 
     @abstractmethod
@@ -100,8 +100,19 @@ class SQLAlchemyRepository(Repository):
         self,
         response_dto: Base | None = None,
         filters: BaseModel = None,
+        order_filters: BaseModel = None
     ) -> list[BaseModel]:
-        stmt = select(self.model).filter_by(**filters.model_dump())
+        stmt = select(self.model)
+        if filters:
+            print(filters)
+            stmt = stmt.filter_by(**filters.model_dump(exclude_none=True))
+        if order_filters:
+            if order_filters.limit:
+                stmt = stmt.limit(order_filters.limit)
+            if order_filters.offset:
+                stmt = stmt.offset(order_filters.offset)
+            if order_filters.ordering:
+                stmt = stmt.order_by(order_filters.ordering)
         res = await self._execute(stmt)
         return self.to_dto(res.scalars())
 

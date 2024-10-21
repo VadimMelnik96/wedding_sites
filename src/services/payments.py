@@ -45,7 +45,7 @@ class PaymentsService(IPaymentsService, ABC):
 
     async def payment_list(self, filters: PaymentFilter, mass_filter: MassFilter) -> list[PaymentDTO]:
         """Сценарий получения списка платежей"""
-        return await self.payments.get_payments_list(filters, mass_filter)
+        return await self.payments.get_list(filters=filters, order_filters=mass_filter)
 
 # тело тестового уведомления о успешной оплате продления
 

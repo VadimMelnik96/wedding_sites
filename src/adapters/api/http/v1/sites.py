@@ -4,7 +4,7 @@ from dishka.integrations.litestar import inject
 from litestar import Controller, get, post
 from litestar.exceptions import HTTPException
 
-from src.adapters.api.http.v1.dto.sites import SitesListRequest, SitesDTO, CreateSiteDTO, SitesRequest
+from src.adapters.api.http.v1.dto.sites import SitesListRequest, SitesDTO, CreateSiteDTO
 from src.lib.exceptions import NotFoundError
 from src.services.ports.sites import ISitesService
 from src.services.sites import MassFilter, SitesFilter
@@ -17,9 +17,9 @@ class WeddingSitesController(Controller):
     @get("/list", summary="Список сайтов",)
     @inject
     async def list_sites(self, service: FromDishka[ISitesService], query: SitesListRequest) -> list[SitesDTO]:
-        print(query)
-        print("here")
-        return await service.get_sites_list(MassFilter.model_validate(query.__dict__))
+        sites_filter = SitesFilter(id=query.id, url=query.url)
+        listing = MassFilter(limit=query.limit, offset=query.offset, ordering=query.ordering)
+        return await service.get_sites_list(sites_filter, listing)
 
     @post(summary="Добавить сайт")
     @inject
@@ -31,14 +31,11 @@ class WeddingSitesController(Controller):
     async def bulk_create(self, service: FromDishka[ISitesService], data: list[CreateSiteDTO]) -> list[SitesDTO]:
         return await service.bulk_create_data(bulk_data=data)
 
-    @get("/get_site", summary="Найти сайт")
+    @get("/get_site/{url:str}", summary="Найти сайт")
     @inject
-    async def get_site(self, service: FromDishka[ISitesService], query: SitesRequest) -> SitesDTO:
-        filters = SitesFilter.model_validate(query.__dict__)
-        print(filters)
+    async def get_site(self, service: FromDishka[ISitesService], url: str) -> SitesDTO:
         try:
-            return await service.get_site_data(filters)
+            return await service.get_site_data(url)
         except NotFoundError as exc:
             raise HTTPException(status_code=404, detail="Сайт не найден") from exc
 
-    # TODO логгинг

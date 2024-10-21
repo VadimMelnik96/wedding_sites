@@ -27,8 +27,11 @@ class SitesService(ISitesService):
     def __init__(self, sites: ISitesRepo):
         self.sites = sites
 
-    async def get_site_data(self, filters: SitesFilter):
-        return await self.sites.get_one(filters)
+    async def get_site_data(self, url: str):
+        return await self.sites.get_site_by_url(url)
+
+    async def get_site_by_id(self, site_id: uuid.UUID):
+        return await self.sites.get_one(SitesFilter(id=site_id))
 
     async def create_site_data(self, data: CreateSiteDTO):
         return await self.sites.create(data)
@@ -36,5 +39,5 @@ class SitesService(ISitesService):
     async def bulk_create_data(self, bulk_data: list[CreateSiteDTO]):
         return await self.sites.bulk_create(bulk_data)
 
-    async def get_sites_list(self, filters: MassFilter):
-        return await self.sites.get_list(filters)
+    async def get_sites_list(self, sites_filters: SitesFilter, listing_filters: MassFilter):
+        return await self.sites.get_list(filters=sites_filters, order_filters=listing_filters)

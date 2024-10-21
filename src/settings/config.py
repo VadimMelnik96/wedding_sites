@@ -19,7 +19,7 @@ class YooKassaSettings(EnvBaseSettings):
 
 class PostgresConfig(EnvBaseSettings):
     scheme: str = "postgresql+asyncpg"
-    host: str = "db"
+    host: str = "localhost" #db
     port: int = 5432
     user: str = "postgres"
     password: str = "postgres"

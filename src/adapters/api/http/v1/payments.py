@@ -27,6 +27,6 @@ class PaymentsController(Controller):
             service: FromDishka[IPaymentsService],
             query: PaymentsListRequest
     ) -> list[PaymentDTO]:
-        filters = PaymentFilter(id=query.id, site_id=query.site_id, paid=query.paid, status=query.status)
+        filters = PaymentFilter(site_id=query.site_id, paid=query.paid, status=query.status)
         ordering = MassFilter(ordering=query.ordering, limit=query.limit, offset=query.offset)
         return await service.payment_list(filters, ordering)
