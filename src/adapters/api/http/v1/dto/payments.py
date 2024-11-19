@@ -10,6 +10,7 @@ class PaymentDTO(ArbitraryModel):
     created_at: str
     status: str
     paid: bool
+    tg_id: int
     amount: str
     currency: str
     confirmation_url: str

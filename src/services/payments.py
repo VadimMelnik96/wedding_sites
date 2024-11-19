@@ -9,6 +9,7 @@ from src.adapters.api.http.v1.dto.payments import PaymentDTO, PaymentUpdateDTO, 
 from src.adapters.api.http.v1.dto.sites import UpdateSiteDTO
 from src.adapters.spi.persistent.repositories.ports.payments import IPaymentsRepo
 from src.adapters.spi.persistent.repositories.ports.sites import ISitesRepo
+from src.infrastructure.ports.tg_bot_adapter import ITgBotAdapter
 
 from src.services.ports.payments import IPaymentsService
 from src.services.sites import UpdateSitesFilter, MassFilter
@@ -16,9 +17,10 @@ from src.services.sites import UpdateSitesFilter, MassFilter
 
 class PaymentsService(IPaymentsService, ABC):
 
-    def __init__(self, sites: ISitesRepo, payments: IPaymentsRepo):
+    def __init__(self, sites: ISitesRepo, payments: IPaymentsRepo, adapter: ITgBotAdapter):
         self.sites = sites
         self.payments = payments
+        self.bot_adapter = adapter
 
     async def write_down_payment(self, data: PaymentDTO):
         """Запись платежа в базе"""
@@ -38,10 +40,14 @@ class PaymentsService(IPaymentsService, ABC):
             PaymentUpdateDTO(status=response_object.status, paid=response_object.paid),
             PaymentFilter(id=payment.id)
         )
-        if notification_object.event == WebhookNotificationEventType.PAYMENT_SUCCEEDED:
+        if notification_object.event == WebhookNotificationEventType.PAYMENT_CANCELED:
+            await self.bot_adapter.send_message(payment.tg_id, "Ваш платеж был отклонен сервисом оплаты. Попробуйте снова")
+        elif notification_object.event == WebhookNotificationEventType.PAYMENT_SUCCEEDED:
             site = await self.sites.get_one(UpdateSitesFilter(id=payment.site_id))
-            update_data = UpdateSiteDTO(expire_date=site.expire_date + timedelta(days=365))
+            expire_date = site.expire_date + timedelta(days=365)
+            update_data = UpdateSiteDTO(expire_date=expire_date)
             await self.sites.update(update_data, UpdateSitesFilter(id=payment.site_id))
+            await self.bot_adapter.send_message(payment.tg_id, f"Ваш платеж прошел успешно, срок истечения подписки на сайт - {expire_date}")
 
     async def payment_list(self, filters: PaymentFilter, mass_filter: MassFilter) -> list[PaymentDTO]:
         """Сценарий получения списка платежей"""

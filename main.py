@@ -12,8 +12,9 @@ from dishka.integrations.aiogram import setup_dishka as setup_dishka_for_tg
 
 from src.adapters.api.http.v1 import v1_router
 from src.adapters.bot.routers.check_router import check_router
-from src.infrastructure.ioc import ApplicationProvider, PostgresProvider, AiogramProvider
-from src.lib.middlewares import DatabaseMiddleware
+from src.infrastructure.ioc import ApplicationProvider
+from src.lib.providers import PostgresProvider, AiogramProvider
+from src.lib.middlewares import db_middleware_factory
 from src.settings.config import PostgresConfig, config
 
 
@@ -24,6 +25,7 @@ def get_litestar_app() -> Litestar:
         route_handlers=[v1_router],
         # plugins=[StructlogPlugin()],
         debug=config.app.debug,
+        middleware=[db_middleware_factory],
         compression_config=CompressionConfig(backend="gzip", gzip_compress_level=9),
         openapi_config=OpenAPIConfig(
             title=config.openapi.title,
@@ -45,7 +47,6 @@ def get_app() -> Litestar:
         ), litestar_app
     )
     # litestar_app.plugins = [StructlogPlugin()]
-    litestar_app.middleware = [DatabaseMiddleware]
     return litestar_app
 
 

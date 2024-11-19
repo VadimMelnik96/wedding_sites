@@ -72,7 +72,6 @@ class LitestarOpenapiSettings(EnvBaseSettings):
 class BotSettings(EnvBaseSettings):
 
     token: SecretStr
-
     model_config = SettingsConfigDict(env_prefix="bot_")
 
 

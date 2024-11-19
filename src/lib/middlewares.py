@@ -8,18 +8,13 @@ except ImportError as exc:
     EXCEPTION_MESSAGE = "Необходимо установить litestar"
     raise ImportError(EXCEPTION_MESSAGE) from exc
 
+def db_middleware_factory(app: ASGIApp) -> ASGIApp:
+    """Фабрика промежуточного слоя."""
+    async def db_middleware(scope: Scope, receive: Receive, send: Send) -> None:
+        container = scope["app"].state.dishka_container
+        database = await container.get(Database)
+        async with database.database_scope():
+            await app(scope, receive, send)
 
-class DatabaseMiddleware(MiddlewareProtocol):
-    """Промежуточный слой для открытия scoped session на запросах."""
-    def __init__(self, app: ASGIApp) -> None:
-        super().__init__(app)
-        self.app = app
+    return db_middleware
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        """Открытие scoped session."""
-        if scope["type"] == "http":
-            container = scope["app"].state.dishka_container
-            database = await container.get(Database)
-            async with database.database_scope():
-                await self.app(scope, receive, send)
-        await self.app(scope, receive, send)

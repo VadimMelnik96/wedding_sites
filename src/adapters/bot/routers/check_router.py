@@ -129,6 +129,7 @@ async def get_payment(query: CallbackQuery, callback_data: PaymentCallback, serv
         site_id=site_id,
         status=payment.status,
         paid=payment.paid,
+        tg_id=query.from_user.id,
         amount=str(payment.amount.value),
         currency=payment.amount.currency,
         confirmation_url=confirmation_url,
