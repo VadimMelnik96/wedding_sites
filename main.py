@@ -12,10 +12,12 @@ from dishka.integrations.aiogram import setup_dishka as setup_dishka_for_tg
 
 from src.adapters.api.http.v1 import v1_router
 from src.adapters.bot.routers.check_router import check_router
+from src.infrastructure import exception_handlers
+from src.infrastructure.exception_handlers import exception_handler
 from src.infrastructure.ioc import ApplicationProvider
-from src.lib.providers import PostgresProvider, AiogramProvider
+from src.lib.providers import PostgresProvider, AiogramProvider, BotProvider
 from src.lib.middlewares import db_middleware_factory
-from src.settings.config import PostgresConfig, config
+from src.settings.config import PostgresConfig, config, BotSettings
 
 
 def get_litestar_app() -> Litestar:
@@ -25,7 +27,8 @@ def get_litestar_app() -> Litestar:
         route_handlers=[v1_router],
         # plugins=[StructlogPlugin()],
         debug=config.app.debug,
-        middleware=[db_middleware_factory],
+        exception_handlers=exception_handler,
+        # middleware=[db_middleware_factory],
         compression_config=CompressionConfig(backend="gzip", gzip_compress_level=9),
         openapi_config=OpenAPIConfig(
             title=config.openapi.title,
@@ -41,9 +44,11 @@ def get_app() -> Litestar:
     litestar_app = get_litestar_app()
     setup_dishka_for_litestar(
         make_async_container(
+
             ApplicationProvider(),
+            BotProvider(),
             PostgresProvider(),
-            context={PostgresConfig: config.database}
+            context={PostgresConfig: config.database,  BotSettings: config.bot},
         ), litestar_app
     )
     # litestar_app.plugins = [StructlogPlugin()]
@@ -59,10 +64,12 @@ async def get_bot():
     dp.include_router(check_router)
 
     container = make_async_container(
+
         ApplicationProvider(),
+        BotProvider(),
         AiogramProvider(),
         PostgresProvider(),
-        context={PostgresConfig: config.database}
+        context={PostgresConfig: config.database, BotSettings: config.bot}
     )
     setup_dishka_for_tg(container=container, router=dp, auto_inject=True)
     try:
